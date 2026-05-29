@@ -1180,6 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="message-body">
           <span class="message-sender">Mevzuat AI</span>
+          <div class="tool-chips"></div>
           <div class="message-content">
             <span class="typing-cursor"></span>
           </div>
@@ -1191,6 +1192,60 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollToBottom();
 
     const aiContentDiv = aiWrapper.querySelector('.message-content');
+    const toolChipsDiv = aiWrapper.querySelector('.tool-chips');
+
+    const TOOL_LABELS = {
+      search_kanun: 'Kanun aranıyor',
+      search_within_kanun: 'Kanun maddesi aranıyor',
+      search_teblig: 'Tebliğ aranıyor',
+      search_within_teblig: 'Tebliğ içinde aranıyor',
+      get_teblig_content: 'Tebliğ metni getiriliyor',
+      search_cbk: 'Cumhurbaşkanlığı kararnamesi aranıyor',
+      search_within_cbk: 'CBK maddesi aranıyor',
+      search_cbyonetmelik: 'Cumhurbaşkanlığı yönetmeliği aranıyor',
+      search_within_cbyonetmelik: 'CB yönetmeliği maddesi aranıyor',
+      search_cbbaskankarar: 'Cumhurbaşkanı kararı aranıyor',
+      search_within_cbbaskankarar: 'Cumhurbaşkanı kararı içinde aranıyor',
+      get_cbbaskankarar_content: 'Cumhurbaşkanı kararı metni getiriliyor',
+      search_cbgenelge: 'Cumhurbaşkanlığı genelgesi aranıyor',
+      search_within_cbgenelge: 'CB genelgesi içinde aranıyor',
+      get_cbgenelge_content: 'CB genelgesi metni getiriliyor',
+      search_khk: 'KHK aranıyor',
+      search_within_khk: 'KHK maddesi aranıyor',
+      search_tuzuk: 'Tüzük aranıyor',
+      search_within_tuzuk: 'Tüzük maddesi aranıyor',
+      search_kurum_yonetmelik: 'Kurum yönetmeliği aranıyor',
+      search_within_kurum_yonetmelik: 'Kurum yönetmeliği maddesi aranıyor',
+      search_mevzuat: 'Mevzuat aranıyor',
+      get_mevzuat_content: 'Mevzuat metni getiriliyor',
+      search_within_mevzuat: 'Mevzuat içinde aranıyor',
+      get_mevzuat_gerekce: 'Kanun gerekçesi getiriliyor',
+      get_mevzuat_madde_tree: 'Madde dizini getiriliyor'
+    };
+
+    const chipById = {};
+    const labelFor = (name) => TOOL_LABELS[name] || (name.replace(/_/g, ' ') + ' çalıştırılıyor');
+
+    const addToolChip = (id, name, state) => {
+      const label = labelFor(name);
+      let chip = chipById[id];
+      if (!chip) {
+        chip = document.createElement('div');
+        chip.className = 'tool-chip ' + state;
+        toolChipsDiv.appendChild(chip);
+        chipById[id] = chip;
+      } else {
+        chip.className = 'tool-chip ' + state;
+      }
+      if (state === 'running') {
+        chip.innerHTML = `<span class="tool-chip-spinner"></span><span class="tool-chip-label">${label}…</span>`;
+      } else if (state === 'done') {
+        chip.innerHTML = `<i data-lucide="check" class="tool-chip-icon"></i><span class="tool-chip-label">${label}</span>`;
+      } else if (state === 'error') {
+        chip.innerHTML = `<i data-lucide="x" class="tool-chip-icon"></i><span class="tool-chip-label">${label} — hata</span>`;
+      }
+      if (window.lucide) lucide.createIcons();
+    };
 
     // 4. Trigger Post SSE Endpoint
     try {
@@ -1236,6 +1291,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 aiContentDiv.innerHTML = md.render(accumulatedText) + '<span class="typing-cursor"></span>';
                 scrollToBottom();
                 Prism.highlightAllUnder(aiContentDiv);
+              } else if (data.type === 'tool_start') {
+                addToolChip(data.id, data.name, 'running');
+                scrollToBottom();
+              } else if (data.type === 'tool_end') {
+                addToolChip(data.id, data.name, 'done');
+              } else if (data.type === 'tool_error') {
+                addToolChip(data.id, data.name, 'error');
+              } else if (data.error) {
+                console.error('Stream error:', data.error);
               }
             } catch (e) {
               // Partial buffer

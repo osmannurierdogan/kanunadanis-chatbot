@@ -8,12 +8,17 @@ const Stripe = require('stripe');
 const Anthropic = require('@anthropic-ai/sdk');
 require('dotenv').config();
 
+const { getAnthropicTools, callTool: mcpCallTool } = require('./lib/mcp-client');
+const { runChatWithTools } = require('./lib/anthropic-loop');
+
 const anthropic = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   : null;
 
 const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
-const SYSTEM_INSTRUCTION = `Sen Mevzuat AI'sın — Türkçe mevzuat, hukuk ve yazılım konularında uzman bir yapay zeka asistanısın. Net, kaynaklara dayalı Türkçe yanıtlar ver. Kod örneklerini markdown code block'larla biçimlendir. Hukuki konularda kullanıcıyı önemli durumlarda profesyonel danışmana yönlendir.`;
+const SYSTEM_INSTRUCTION = `Sen Mevzuat AI'sın — Türkçe mevzuat, hukuk ve yazılım konularında uzman bir yapay zeka asistanısın. Net, kaynaklara dayalı Türkçe yanıtlar ver. Kod örneklerini markdown code block'larla biçimlendir. Hukuki konularda kullanıcıyı önemli durumlarda profesyonel danışmana yönlendir.
+
+Türk mevzuatına (kanun, KHK, yönetmelik, tebliğ, tüzük, Cumhurbaşkanlığı kararnamesi/kararı/genelgesi vb.) ilişkin spesifik sorularda — özellikle belirli bir kanun, madde veya yürürlükteki metin sorulduğunda — sana sağlanan mevzuat arama tool'larını kullan. Aramada anahtar Türkçe terimlerle ara (örn. "katma değer vergisi"), salt kanun numarası yazma. Tool sonuçlarını cevabında kaynak olarak referansla (kanun adı, madde no). Genel hukuki yorum, kavramsal açıklama veya yazılım sorularında tool çağırma — kendi bilgini kullan.`;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -473,32 +478,40 @@ app.post('/api/chats/:id/message', authenticateUser, checkCredit, async (req, re
       content: m.content
     }));
 
-    const stream = await anthropic.messages.create({
-      model: ANTHROPIC_MODEL,
-      max_tokens: 4096,
-      system: SYSTEM_INSTRUCTION,
-      messages: anthropicMessages,
-      stream: true
-    });
-
-    let accumulated = '';
-    for await (const event of stream) {
-      if (aborted) break;
-      if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-        const text = event.delta.text;
-        if (text) {
-          accumulated += text;
-          res.write(`data: ${JSON.stringify({ text })}\n\n`);
-        }
-      }
+    // 5. MCP tool listesini al (server down ise tool'suz devam et)
+    let tools = [];
+    try {
+      tools = await getAnthropicTools();
+    } catch (e) {
+      console.warn('MCP tools unavailable, proceeding without tools:', e.message);
     }
 
-    // 5. AI cevabını Firestore'a kaydet
-    if (accumulated && !aborted) {
+    const onEvent = (ev) => {
+      if (aborted) return;
+      if (ev.type === 'text') {
+        res.write(`data: ${JSON.stringify({ text: ev.text })}\n\n`);
+      } else {
+        res.write(`data: ${JSON.stringify(ev)}\n\n`);
+      }
+    };
+
+    const { finalText } = await runChatWithTools({
+      anthropic,
+      model: ANTHROPIC_MODEL,
+      system: SYSTEM_INSTRUCTION,
+      messages: anthropicMessages,
+      tools,
+      mcpCallTool,
+      onEvent,
+      isAborted: () => aborted
+    });
+
+    // 6. AI cevabını Firestore'a kaydet
+    if (finalText && !aborted) {
       const aiMsg = {
         id: 'msg_' + Math.random().toString(36).substr(2, 9),
         role: 'assistant',
-        content: accumulated,
+        content: finalText,
         timestamp: new Date().toISOString()
       };
       messages.push(aiMsg);

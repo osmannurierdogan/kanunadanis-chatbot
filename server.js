@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const jwksRsa = require('jwks-rsa');
@@ -18,13 +17,20 @@ const SYSTEM_INSTRUCTION = `Sen Mevzuat AI'sın — Türkçe mevzuat, hukuk ve y
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_DIR = path.join(__dirname, 'data');
-const CHATS_FILE = path.join(DATA_DIR, 'chats.json');
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // Initialize Firebase Admin SDK
-admin.initializeApp({
-  credential: admin.credential.applicationDefault()
-});
+// Supports two modes:
+// 1. FIREBASE_SERVICE_ACCOUNT env var (base64-encoded JSON) — for Railway/Render
+// 2. GOOGLE_APPLICATION_CREDENTIALS file path — for local dev with ADC
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  const serviceAccount = JSON.parse(
+    Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf8')
+  );
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+} else {
+  admin.initializeApp({ credential: admin.credential.applicationDefault() });
+}
 const db = admin.firestore();
 
 // Initialize Stripe
@@ -38,24 +44,19 @@ const PLAN_CREDITS = {
   business: 700
 };
 
-// Ensure data directory and chats.json exist
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-if (!fs.existsSync(CHATS_FILE)) {
-  fs.writeFileSync(CHATS_FILE, JSON.stringify([], null, 2), 'utf8');
-}
-
 app.use(cors());
 app.use(express.json());
 
-// Set Cache-Control header to prevent browser caching for development
-app.use((req, res, next) => {
+// Only disable cache for API routes, not static assets
+app.use('/api', (req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   next();
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Health check for Railway/Render
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Set up the JWKS client to get Google's public keys for Firebase ID Tokens
 const jwksClient = jwksRsa({
@@ -195,88 +196,74 @@ async function checkCredit(req, res, next) {
   }
 }
 
-// Helper to read/write chats database
-function readChats() {
-  try {
-    const data = fs.readFileSync(CHATS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('Error reading chats file:', err);
-    return [];
-  }
-}
-
-function writeChats(chats) {
-  try {
-    fs.writeFileSync(CHATS_FILE, JSON.stringify(chats, null, 2), 'utf8');
-  } catch (err) {
-    console.error('Error writing chats file:', err);
-  }
-}
-
 // REST API Endpoints (Secured per-user)
+// Chats are stored in Firestore: users/{uid}/chats/{chatId}
 
 // 1. Get all chat sessions for the authenticated user
-app.get('/api/chats', authenticateUser, (req, res) => {
-  const chats = readChats();
-  
-  // Filter chats belonging to this user
-  const userChats = chats.filter(c => c.userId === req.user.uid);
-  
-  const summary = userChats.map(c => ({
-    id: c.id,
-    title: c.title,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt
-  })).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-  
-  res.json(summary);
+app.get('/api/chats', authenticateUser, async (req, res) => {
+  try {
+    const snap = await db.collection('users').doc(req.user.uid)
+      .collection('chats').orderBy('updatedAt', 'desc').get();
+    const summary = snap.docs.map(d => {
+      const c = d.data();
+      return { id: d.id, title: c.title, createdAt: c.createdAt, updatedAt: c.updatedAt };
+    });
+    res.json(summary);
+  } catch (err) {
+    console.error('Get chats error:', err);
+    res.status(500).json({ error: 'Sohbetler alınamadı.' });
+  }
 });
 
 // 2. Create a new chat session for the authenticated user
-app.post('/api/chats', authenticateUser, (req, res) => {
-  const chats = readChats();
-  const newChat = {
-    id: 'chat_' + Math.random().toString(36).substr(2, 9),
-    title: req.body.title || 'Yeni Sohbet',
-    userId: req.user.uid, // Tie chat session to the logged-in user's UID
-    messages: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  chats.push(newChat);
-  writeChats(chats);
-  res.status(201).json(newChat);
+app.post('/api/chats', authenticateUser, async (req, res) => {
+  try {
+    const chatId = 'chat_' + Math.random().toString(36).substr(2, 9);
+    const now = new Date().toISOString();
+    const newChat = {
+      title: req.body.title || 'Yeni Sohbet',
+      userId: req.user.uid,
+      messages: [],
+      createdAt: now,
+      updatedAt: now
+    };
+    await db.collection('users').doc(req.user.uid).collection('chats').doc(chatId).set(newChat);
+    res.status(201).json({ id: chatId, ...newChat });
+  } catch (err) {
+    console.error('Create chat error:', err);
+    res.status(500).json({ error: 'Sohbet oluşturulamadı.' });
+  }
 });
 
 // 3. Get a specific chat session for the authenticated user
-app.get('/api/chats/:id', authenticateUser, (req, res) => {
-  const chats = readChats();
-  const chat = chats.find(c => c.id === req.params.id && c.userId === req.user.uid);
-  
-  if (!chat) {
-    return res.status(404).json({ error: 'Sohbet bulunamadı veya bu sohbete erişim yetkiniz yok.' });
+app.get('/api/chats/:id', authenticateUser, async (req, res) => {
+  try {
+    const doc = await db.collection('users').doc(req.user.uid)
+      .collection('chats').doc(req.params.id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Sohbet bulunamadı veya bu sohbete erişim yetkiniz yok.' });
+    }
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (err) {
+    console.error('Get chat error:', err);
+    res.status(500).json({ error: 'Sohbet alınamadı.' });
   }
-  res.json(chat);
 });
 
 // 4. Delete a chat session belonging to the authenticated user
-app.delete('/api/chats/:id', authenticateUser, (req, res) => {
-  let chats = readChats();
-  const chat = chats.find(c => c.id === req.params.id);
-  
-  if (!chat) {
-    return res.status(404).json({ error: 'Sohbet bulunamadı.' });
+app.delete('/api/chats/:id', authenticateUser, async (req, res) => {
+  try {
+    const ref = db.collection('users').doc(req.user.uid).collection('chats').doc(req.params.id);
+    const doc = await ref.get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Sohbet bulunamadı.' });
+    }
+    await ref.delete();
+    res.json({ success: true, message: 'Sohbet başarıyla silindi.' });
+  } catch (err) {
+    console.error('Delete chat error:', err);
+    res.status(500).json({ error: 'Sohbet silinemedi.' });
   }
-  
-  if (chat.userId !== req.user.uid) {
-    return res.status(403).json({ error: 'Bu sohbeti silme yetkiniz yok.' });
-  }
-  
-  chats = chats.filter(c => c.id !== req.params.id);
-  writeChats(chats);
-  res.json({ success: true, message: 'Sohbet başarıyla silindi.' });
 });
 
 // Mock answers database to simulate a smart Turkish Legal & General AI
@@ -397,14 +384,15 @@ app.post('/api/chats/:id/message', authenticateUser, checkCredit, async (req, re
     return res.status(503).json({ error: 'ANTHROPIC_API_KEY tanımlı değil. Lütfen .env dosyasını kontrol edin.' });
   }
 
-  const chats = readChats();
-  const chatIndex = chats.findIndex(c => c.id === chatId && c.userId === req.user.uid);
+  const chatRef = db.collection('users').doc(req.user.uid).collection('chats').doc(chatId);
+  const chatDoc = await chatRef.get();
 
-  if (chatIndex === -1) {
+  if (!chatDoc.exists) {
     return res.status(404).json({ error: 'Sohbet bulunamadı veya bu sohbete erişim yetkiniz yok.' });
   }
 
-  const chat = chats[chatIndex];
+  const chat = chatDoc.data();
+  const messages = chat.messages || [];
 
   // 1. User message'ı kaydet
   const userMsg = {
@@ -413,14 +401,15 @@ app.post('/api/chats/:id/message', authenticateUser, checkCredit, async (req, re
     content: message,
     timestamp: new Date().toISOString()
   };
-  chat.messages.push(userMsg);
+  messages.push(userMsg);
 
   // 2. Title — ilk mesajda kullanıcı metninin kısaltması
-  if (chat.messages.length === 1) {
-    chat.title = message.length > 40 ? message.substring(0, 40) + '...' : message;
-  }
-  chat.updatedAt = new Date().toISOString();
-  writeChats(chats);
+  const title = messages.length === 1
+    ? (message.length > 40 ? message.substring(0, 40) + '...' : message)
+    : chat.title;
+
+  const now = new Date().toISOString();
+  await chatRef.update({ messages, title, updatedAt: now });
 
   // 3. SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
@@ -432,8 +421,8 @@ app.post('/api/chats/:id/message', authenticateUser, checkCredit, async (req, re
   req.on('close', () => { aborted = true; });
 
   try {
-    // 4. Anthropic mesaj formatı — tüm konuşma (son user mesajı dahil)
-    const messages = chat.messages.map(m => ({
+    // 4. Anthropic mesaj formatı
+    const anthropicMessages = messages.map(m => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: m.content
     }));
@@ -442,7 +431,7 @@ app.post('/api/chats/:id/message', authenticateUser, checkCredit, async (req, re
       model: ANTHROPIC_MODEL,
       max_tokens: 4096,
       system: SYSTEM_INSTRUCTION,
-      messages,
+      messages: anthropicMessages,
       stream: true
     });
 
@@ -458,7 +447,7 @@ app.post('/api/chats/:id/message', authenticateUser, checkCredit, async (req, re
       }
     }
 
-    // 5. AI cevabını kaydet
+    // 5. AI cevabını Firestore'a kaydet
     if (accumulated && !aborted) {
       const aiMsg = {
         id: 'msg_' + Math.random().toString(36).substr(2, 9),
@@ -466,14 +455,8 @@ app.post('/api/chats/:id/message', authenticateUser, checkCredit, async (req, re
         content: accumulated,
         timestamp: new Date().toISOString()
       };
-      const freshChats = readChats();
-      const freshIdx = freshChats.findIndex(c => c.id === chatId && c.userId === req.user.uid);
-      if (freshIdx !== -1) {
-        freshChats[freshIdx].messages.push(aiMsg);
-        freshChats[freshIdx].title = chat.title;
-        freshChats[freshIdx].updatedAt = new Date().toISOString();
-        writeChats(freshChats);
-      }
+      messages.push(aiMsg);
+      await chatRef.update({ messages, updatedAt: new Date().toISOString() });
     }
 
     res.write('data: [DONE]\n\n');
@@ -559,8 +542,8 @@ app.post('/api/stripe/checkout', authenticateUser, async (req, res) => {
           price: process.env.STRIPE_PRICE_CUSTOM,
           quantity: customAmount
         }],
-        success_url: `${process.env.BASE_URL || 'http://localhost:3000'}/index.html?checkout=success`,
-        cancel_url: `${process.env.BASE_URL || 'http://localhost:3000'}/pricing.html`,
+        success_url: `${BASE_URL}/index.html?checkout=success`,
+        cancel_url: `${BASE_URL}/pricing.html`,
         metadata: {
           uid: req.user.uid,
           credits: credits.toString(),
@@ -602,8 +585,8 @@ app.post('/api/stripe/checkout', authenticateUser, async (req, res) => {
         price: priceMap[planId],
         quantity: 1
       }],
-      success_url: `${process.env.BASE_URL || 'http://localhost:3000'}/index.html?checkout=success`,
-      cancel_url: `${process.env.BASE_URL || 'http://localhost:3000'}/pricing.html`,
+      success_url: `${BASE_URL}/index.html?checkout=success`,
+      cancel_url: `${BASE_URL}/pricing.html`,
       metadata: { planId }
     });
 
@@ -627,7 +610,7 @@ app.post('/api/stripe/portal', authenticateUser, async (req, res) => {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${process.env.BASE_URL || 'http://localhost:3000'}/index.html`
+      return_url: `${BASE_URL}/index.html`
     });
 
     res.json({ url: session.url });

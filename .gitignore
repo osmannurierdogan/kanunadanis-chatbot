@@ -67,4 +67,11 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Firebase service account keys
 ./kanunadanis-firebase-adminsdk-fbsvc-56f770c744.json
+*firebase-adminsdk*.json
+serviceAccountKey.json
+
+# Local chat data (migrated to Firestore)
+data/

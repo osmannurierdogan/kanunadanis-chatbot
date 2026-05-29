@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mevzuat AI | ChatGPT Klonu</title>
+  <!-- SEO & Meta Tags -->
+  <meta name="description"
+    content="Türkiye'nin mevzuat ve genel yazılım çözümleri için tasarlanmış premium ChatGPT klonu.">
+
+  <!-- Google Fonts (Inter & Outfit) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="style.css?v=1.0.2">
+
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Markdown-It for rendering markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+
+  <!-- PrismJS CSS & JS for high-fidelity code highlight -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+
+<body>
+  <!-- Inline blocking script to prevent unauthorized access and theme flashing -->
+  <script>
+    (function () {
+      // 1. Sync theme instantly
+      const savedTheme = localStorage.getItem('mevzuat_theme') || 'system';
+      const isLight = savedTheme === 'light' ||
+        (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches);
+      if (isLight) {
+        document.documentElement.classList.add('light-theme');
+      }
+
+      // 2. Route Protection
+      const isLoggedIn = localStorage.getItem('mevzuat_logged_in') === 'true' || localStorage.getItem('mevzuat_mock_token');
+      if (!isLoggedIn) {
+        window.location.href = 'login.html';
+      }
+    })();
+  </script>
+
+  <div class="app-container" style="height: 100vh;">
+    <!-- 1. Sidebar (Sol Menü) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button class="new-chat-btn" id="newChatBtn">
+          <i data-lucide="plus"></i>
+          <span>Yeni Sohbet</span>
+        </button>
+        <button class="toggle-sidebar-btn" id="hideSidebarBtn" title="Kenar Çubuğunu Kapat">
+          <i data-lucide="panel-left-close"></i>
+        </button>
+      </div>
+
+      <!-- Chat History List -->
+      <div class="chat-list-container" id="chatListContainer">
+        <!-- Chats will be loaded dynamically here -->
+        <div class="chat-list-skeleton">
+          <div class="skeleton-item"></div>
+          <div class="skeleton-item"></div>
+          <div class="skeleton-item"></div>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar" id="userAvatar">MA</div>
+          <div class="user-details">
+            <span class="user-name" id="userEmail">Giriş Yapılmadı</span>
+            <span class="user-tier" id="userPlan">Ücretsiz</span>
+            <span class="user-credits" id="userCredits"></span>
+          </div>
+        </div>
+        <div class="footer-actions">
+          <button class="settings-btn" id="settingsBtn" title="Ayarlar">
+            <i data-lucide="settings"></i>
+          </button>
+          <button class="logout-btn" id="logoutBtn" title="Çıkış Yap" style="display: none;">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. Main Chat Area (Ana Sohbet Alanı) -->
+    <main class="main-content">
+      <!-- Top Header Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="toggle-sidebar-btn show-sidebar-btn" id="showSidebarBtn" title="Kenar Çubuğunu Aç">
+            <i data-lucide="panel-left-open"></i>
+          </button>
+
+          <!-- Model Selector Dropdown -->
+          <div class="model-selector-wrapper">
+            <button class="model-selector-btn" id="modelSelectorBtn">
+              <span class="model-icon"><i data-lucide="sparkles"></i></span>
+              <span class="model-name">Mevzuat AI 4.5</span>
+              <i data-lucide="chevron-down" class="chevron"></i>
+            </button>
+            <div class="model-dropdown" id="modelDropdown">
+              <div class="dropdown-item active" data-model="mevzuat-4.5" data-icon="sparkles">
+                <div class="item-title">
+                  <i data-lucide="sparkles"></i>
+                  <span>Mevzuat AI 4.5</span>
+                </div>
+                <p class="item-desc">En akıllı ve kapsamlı model. Hukuki taslaklar ve kod yazımında en iyisi.</p>
+              </div>
+              <div class="dropdown-item" data-model="mevzuat-flash" data-icon="zap">
+                <div class="item-title">
+                  <i data-lucide="zap"></i>
+                  <span>Mevzuat Flash</span>
+                </div>
+                <p class="item-desc">Hızlı yanıtlar ve genel sohbetler için ideal, yüksek performanslı hafif model.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button class="icon-btn" id="headerNewChatBtn" title="Yeni Sohbet">
+            <i data-lucide="square-pen"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Message History / Welcome Screen Container -->
+      <div class="chat-container" id="chatContainer">
+        <!-- 3. Welcome Screen (Empty State) -->
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-header">
+            <div class="welcome-logo">
+              <i data-lucide="scale"></i>
+            </div>
+            <h1>Bugün size nasıl yardımcı olabilirim?</h1>
+          </div>
+
+          <!-- Prompt Suggestions Grid -->
+          <div class="suggestions-grid">
+            <div class="suggestion-card" data-prompt="Kira ve hizmet sözleşmesi taslağı hazırlar mısın?">
+              <div class="suggestion-icon"><i data-lucide="file-text"></i></div>
+              <div class="suggestion-content">
+                <h3>Sözleşme Şablonu</h3>
+                <p>Hizmet veya kira sözleşmesi taslağı oluştur</p>
+              </div>
+              <div class="suggestion-arrow"><i data-lucide="arrow-up-right"></i></div>
+            </div>
+
+            <div class="suggestion-card" data-prompt="4857 sayılı İş Kanununa göre yıllık izin hakları nelerdir?">
+              <div class="suggestion-icon"><i data-lucide="gavel"></i></div>
+              <div class="suggestion-content">
+                <h3>Yıllık İzin Mevzuatı</h3>
+                <p>Kıdeme göre izin haklarını ve kanun maddesini incele</p>
+              </div>
+              <div class="suggestion-arrow"><i data-lucide="arrow-up-right"></i></div>
+            </div>
+
+            <div class="suggestion-card"
+              data-prompt="Modern ve güvenli bir JavaScript API fetch fonksiyonu yazar mısın?">
+              <div class="suggestion-icon"><i data-lucide="code-2"></i></div>
+              <div class="suggestion-content">
+                <h3>JS Fetch API Kodu</h3>
+                <p>Asenkron, hata kontrollü API istek kodu üret</p>
+              </div>
+              <div class="suggestion-arrow"><i data-lucide="arrow-up-right"></i></div>
+            </div>
+
+            <div class="suggestion-card"
+              data-prompt="Merhaba! Mevzuat AI neler yapabilir ve hangi konularda destek sunar?">
+              <div class="suggestion-icon"><i data-lucide="help-circle"></i></div>
+              <div class="suggestion-content">
+                <h3>Yetenekleri Keşfet</h3>
+                <p>Sistem yetenekleri ve genel yardım menüsünü aç</p>
+              </div>
+              <div class="suggestion-arrow"><i data-lucide="arrow-up-right"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Active Message Stream List (Hidden initially) -->
+        <div class="message-list" id="messageList" style="display: none;"></div>
+      </div>
+
+      <!-- 5. Bottom Interactive Input Box Container -->
+      <footer class="chat-input-area">
+        <div class="input-wrapper">
+          <form id="chatForm">
+            <textarea id="chatInput" placeholder="Mevzuat AI'a bir soru sorun..." rows="1"
+              autocomplete="off"></textarea>
+            <div class="input-actions">
+              <div class="left-actions">
+                <button type="button" class="action-btn" id="attachBtn" title="Dosya Ekle">
+                  <i data-lucide="paperclip"></i>
+                </button>
+                <button type="button" class="action-btn" id="micBtn" title="Sesli Giriş">
+                  <i data-lucide="mic"></i>
+                </button>
+                <input type="file" id="fileInput" accept=".txt,.md,.json,.csv,.log,.xml,.html,.js,.ts,.py,.java,.c,.cpp,.go,.rs,.rb,.php,.sh,.yaml,.yml,.sql,application/pdf" style="display: none;">
+              </div>
+              <div id="attachmentChip" class="attachment-chip" style="display: none;">
+                <i data-lucide="file"></i>
+                <span id="attachmentName"></span>
+                <button type="button" id="attachmentRemove" title="Kaldır">
+                  <i data-lucide="x"></i>
+                </button>
+              </div>
+              <button type="submit" class="send-btn" id="sendBtn" disabled title="Mesaj Gönder">
+                <i data-lucide="arrow-up"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+        <p class="disclaimer">
+          Mevzuat AI hata yapabilir. Önemli kararlar almadan önce kanun metinlerini ve resmi kaynakları kontrol etmeyi
+          unutmayın.
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Settings Modal (Glassmorphic & Sleek) -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Ayarlar</h2>
+        <button class="close-modal-btn" id="closeModalBtn">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-tabs">
+          <button class="tab-btn active" data-tab="general">Genel</button>
+          <button class="tab-btn" data-tab="profile">Hesap</button>
+          <button class="tab-btn" data-tab="billing">Fiyatlandırma</button>
+          <button class="tab-btn" data-tab="about">Hakkında</button>
+        </div>
+        <div class="tab-content" id="tabContent">
+          <!-- General Settings -->
+          <div class="tab-pane active" id="tab-general">
+            <div class="setting-row">
+              <div class="setting-info">
+                <h3>Tema Tercihi</h3>
+                <p>Arayüz renk şemasını özelleştirin.</p>
+              </div>
+              <div class="setting-action">
+                <select class="custom-select" id="themeSelect">
+                  <option value="dark">Koyu Tema</option>
+                  <option value="light">Açık Tema</option>
+                  <option value="system" selected>Sistem Varsayılanı</option>
+                </select>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <h3>Yazma Hızı</h3>
+                <p>Yapay zeka yanıtlarının akış hızını ayarlayın.</p>
+              </div>
+              <div class="setting-action">
+                <select class="custom-select" id="speedSelect">
+                  <option value="normal" selected>Normal (Akıcı)</option>
+                  <option value="fast">Hızlı</option>
+                  <option value="instant">Anında</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Settings -->
+          <div class="tab-pane" id="tab-profile">
+            <div class="setting-row"
+              style="margin-bottom: 0px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+              <div class="setting-info">
+                <h3>E-posta Adresi</h3>
+                <p id="profileEmail" style="font-weight: 500; color: var(--text-primary);">Yükleniyor...</p>
+              </div>
+              <div class="setting-action">
+                <span class="badge" id="profileProvider">Geliştirici</span>
+              </div>
+            </div>
+
+            <form id="profileDetailsForm" class="profile-form" onsubmit="return false;">
+              <div class="form-grid">
+                <div class="form-group-half">
+                  <label for="profileFirstName">İsim</label>
+                  <input type="text" id="profileFirstName" placeholder="Adınız" class="profile-input">
+                </div>
+                <div class="form-group-half">
+                  <label for="profileLastName">Soyisim</label>
+                  <input type="text" id="profileLastName" placeholder="Soyadınız" class="profile-input">
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 10px;">
+                <label for="profileBirthDate">Doğum Tarihi</label>
+                <input type="date" id="profileBirthDate" class="profile-input">
+              </div>
+              <div class="form-grid" style="margin-top: 10px;">
+                <div class="form-group-half">
+                  <label for="profileProfession">Meslek</label>
+                  <input type="text" id="profileProfession" placeholder="Örn. Avukat" class="profile-input">
+                </div>
+                <div class="form-group-half">
+                  <label for="profileInstitution">Çalıştığı Kurum</label>
+                  <input type="text" id="profileInstitution" placeholder="Örn. Baro" class="profile-input">
+                </div>
+              </div>
+              <button type="submit" class="profile-submit-btn" id="saveProfileBtn">
+                <i data-lucide="save"></i>
+                <span>Bilgileri Güncelle</span>
+              </button>
+              <div class="profile-save-status" id="profileSaveStatus" style="display: none; margin-top: 12px;"></div>
+            </form>
+          </div>
+
+          <!-- Billing & Pricing -->
+          <div class="tab-pane" id="tab-billing">
+            <div class="setting-row">
+              <div class="setting-info">
+                <h3>Mevcut Plan</h3>
+                <p id="billingCurrentPlan">Yükleniyor...</p>
+              </div>
+              <div class="setting-action">
+                <a href="pricing.html" class="settings-link-btn">Planları Gör</a>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <h3>Kalan Sorgular</h3>
+                <p id="billingCreditsRemaining">Yükleniyor...</p>
+              </div>
+              <div class="setting-action">
+                <a href="pricing.html" class="settings-link-btn">Kredi Satın Al</a>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <h3>Abonelik Yönetimi</h3>
+                <p>Stripe müşteri portalında planınızı düzenleyin.</p>
+              </div>
+              <div class="setting-action">
+                <button id="billingPortalBtn" class="settings-link-btn">Portalı Aç</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- About Details -->
+          <div class="tab-pane" id="tab-about">
+            <div class="setting-row">
+              <div class="setting-info">
+                <h3>Uygulama Sürümü</h3>
+                <p>Mevzuat AI ChatGPT Klonu</p>
+              </div>
+              <div class="setting-action">
+                <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">v1.2.0 (Stable
+                  MVP)</span>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <h3>Geliştirici Ekip</h3>
+                <p>Kanunadanis Legal AI Platform</p>
+              </div>
+              <div class="setting-action">
+                <span style="font-size: 13px; font-weight: 500; color: var(--accent-green);">Google Deepmind</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Premium Confirmation Modal -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-card">
+      <div class="confirm-icon">
+        <i data-lucide="alert-triangle"></i>
+      </div>
+      <h3 id="confirmTitle">Sohbeti Sil</h3>
+      <p id="confirmMessage">Bu sohbeti silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+      <div class="confirm-actions">
+        <button class="confirm-btn-cancel" id="confirmCancelBtn">İptal</button>
+        <button class="confirm-btn-danger" id="confirmOkBtn">Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs Compat Mode -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+
+  <!-- Custom JavaScript File -->
+  <!-- Main App Script with cache buster -->
+  <script src="app.js?v=1.0.2"></script>
+</body>
+
+</html>

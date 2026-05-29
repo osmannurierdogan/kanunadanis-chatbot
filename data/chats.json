@@ -1,0 +1,100 @@
+[
+  {
+    "id": "chat_r62i45y7t",
+    "title": "Yıllık İzin Mevzuatı Özeti",
+    "messages": [
+      {
+        "id": "msg_q45gv17r9",
+        "role": "user",
+        "content": "4857 sayılı İş Kanununa göre yıllık izin hakları nelerdir?",
+        "timestamp": "2026-05-29T09:55:36.663Z"
+      }
+    ],
+    "createdAt": "2026-05-29T09:55:36.653Z",
+    "updatedAt": "2026-05-29T09:55:36.663Z"
+  },
+  {
+    "id": "chat_kmaconlvp",
+    "title": "Yıllık İzin Mevzuatı Özeti",
+    "userId": "7gzmIAJC6ZU32lT3HJW2HNub4qu1",
+    "messages": [
+      {
+        "id": "msg_z8uqr2a1j",
+        "role": "user",
+        "content": "4857 sayılı İş Kanununa göre yıllık izin hakları nelerdir?",
+        "timestamp": "2026-05-29T12:28:00.815Z"
+      },
+      {
+        "id": "msg_7h9791my8",
+        "role": "assistant",
+        "content": "Türkiye Cumhuriyeti mevzuatına göre **İş Kanunu kapsamında Yıllık Ücretli İzin** hakları ve şartları şunlardır:\n\n### **4857 Sayılı İş Kanunu - Madde 53**\nİşyerinde işe başladığı günden itibaren, deneme süresi de içinde olmak üzere, **en az bir yıl** çalışmış olan işçilere yıllık ücretli izin verilir.\n\n#### **Hizmet Süresine Göre İzin Süreleri:**\n* **1 yıldan 5 yıla kadar** (beş yıl dahil) çalışanlara: **14 günden az olamaz.**\n* **5 yıldan fazla 15 yıldan az** çalışanlara: **20 günden az olamaz.**\n* **15 yıl (dahil) ve daha fazla** çalışanlara: **26 günden az olamaz.**\n\n> *Not: Yer altı işlerinde çalışan işçilerin yıllık ücretli izin süreleri dörder gün arttırılarak uygulanır. 18 ve daha küçük yaştaki işçiler ile 50 ve daha yukarı yaştaki işçilere verilecek yıllık ücretli izin süresi **20 günden az olamaz**.*\n\n#### **İzin Kullanım Kuralları**\n1. **Bölünemezlik İlkesi:** Yıllık ücretli izin işveren tarafından bölünemez. Ancak tarafların anlaşmasıyla bir bölümü **10 günden aşağı olmamak üzere** en fazla üçe bölünebilir.\n2. **Ücret Ödemesi:** İşveren, yıllık ücretli izin dönemine ilişkin ücreti, işçinin izne başlamasından önce **peşin olarak ödemek veya avans olarak vermek** zorundadır.",
+        "timestamp": "2026-05-29T12:28:08.804Z"
+      }
+    ],
+    "createdAt": "2026-05-29T12:27:24.072Z",
+    "updatedAt": "2026-05-29T12:28:08.805Z"
+  },
+  {
+    "id": "chat_6kmx9qn1n",
+    "title": "Beyaz yakalı çalışanlar ek mesai yaptıkl...",
+    "userId": "h1XBqT09YHX1jGfHZgM8Xdo1uKU2",
+    "messages": [
+      {
+        "id": "msg_u9l4rju3e",
+        "role": "user",
+        "content": "Beyaz yakalı çalışanlar ek mesai yaptıklarında ücret alır mı?",
+        "timestamp": "2026-05-29T17:29:02.330Z"
+      },
+      {
+        "id": "msg_49qdjxlke",
+        "role": "assistant",
+        "content": "Türk İş Hukuku'na göre, \"beyaz yakalı\" çalışanlar da dahil olmak üzere, iş Kanunu kapsamında çalışan herkesin fazla mesai ücreti alma hakkı vardır. Ancak bu konuda bazı istisnalar ve önemli detaylar bulunmaktadır.\n\n**Genel Kural:**\nİş Kanunu'na göre haftalık çalışma süresi en fazla 45 saattir. Bu süreyi aşan çalışmalar fazla mesai sayılır ve her bir fazla mesai saati için normal çalışma ücretinin yüzde elli (%50) yükseltilmesiyle ödenir. Yani, bir saatlik fazla mesai ücreti, normal saatlik ücretin 1,5 katıdır.\n\n**\"Beyaz Yakalı\" Çalışanlar İçin İstisnalar ve Önemli Noktalar:**\n\n1.  **Üst Düzey Yöneticiler İstisnası:**\n    İş Kanunu'nda doğrudan \"beyaz yakalı\" ayrımı olmasa da, Yargıtay kararlarıyla oluşmuş \"üst düzey yönetici\" kavramı önemli bir istisnadır. Eğer bir çalışan:\n    *   İşletmenin bütününü sevk ve idare eden veya\n    *   İşverenin veya vekilinin yerine vekaleten işletmenin tümünü veya önemli bir bölümünü sevk ve idare eden,\n    *   Kendi çalışma saatlerini ve iş programını belirleyebilen,\n    *   Yüksek ücret alan ve bu ücretinin içinde fazla mesai ücretlerinin de kararlaştırıldığı varsayılan bir konumdaysa,\n    genellikle fazla mesai ücreti talep edemez.\n\n    **Ancak bu durum her \"müdür\" veya \"koordinatör\" unvanlı çalışan için geçerli değildir.** Yargıtay, unvandan ziyade çalışanın fiilen üstlendiği görev ve yetkiye bakar. Yani, unvanı müdür olsa bile, çalışma saatleri sıkı kurallara tabi olan, amirlerinden izin alarak mesai yapan, karar alma yetkisi sınırlı olan bir çalışan, üst düzey yönetici istisnasına girmez ve fazla mesai ücreti almaya hak kazanır.\n\n2.  **Fiili Çalışma ve Kayıtlar:**\n    Fazla mesainin ödenebilmesi için öncelikle fiilen fazla mesai yapıldığının ispatlanması gerekir. Özellikle beyaz yakalı çalışanlarda fazla mesai kayıtları (puantaj, giriş-çıkış saatleri vb.) net olmayabilir. Bu durumda tanık beyanları, e-posta kayıtları, şirket içi yazışmalar gibi deliller de değerlendirilebilir.\n\n3.  **Denkleştirme Esası:**\n    Bazı iş sözleşmelerinde veya toplu iş sözleşmelerinde \"denkleştirme esaslı çalışma\" modeli benimsenebilir. Bu durumda, iki aylık bir dönem içinde haftalık ortalama çalışma süresi 45 saati aşmıyorsa, bazı haftalarda 45 saatin üzerinde çalışılsa bile fazla mesai oluşmayabilir.\n\n4.  **Fazla Sürelerle Çalışma:**\n    Haftalık 45 saatin altında belirlenen sözleşmesel çalışma süresinin aşılması ancak 45 saate kadar yapılan çalışmalar \"fazla sürelerle çalışma\" olarak adlandırılır. Bu durumda her fazla süreyle çalışma saati için normal çalışma ücretinin yüzde yirmi beş (%25) yükseltilmesiyle ödenir.\n\n**Özetle:**\nÇoğu \"beyaz yakalı\" çalışan, eğer haftalık 45 saati aşan bir çalışma gerçekleştiriyorsa ve yukarıda belirtilen \"üst düzey yönetici\" tanımına uymuyorsa, fazla mesai ücreti almaya hak kazanır. Unvan tek başına bir gösterge değildir; önemli olan fiili görev tanımı, yetki ve çalışma saatlerini belirleme özgürlüğüdür.\n\n**Profesyonel Danışmanlık:**\nFazla mesai ücreti alacakları, iş ilişkisinin sona ermesi veya devam etmesi durumunda sıkça uyuşmazlıklara konu olan bir alandır. Kendi durumunuz özelinde haklarınızın ne olduğunu tam olarak anlamak ve olası bir uyuşmazlık durumunda doğru adımları atmak için bir **iş hukuku avukatından profesyonel hukuki danışmanlık almanız önemlidir.**",
+        "timestamp": "2026-05-29T17:29:13.289Z"
+      }
+    ],
+    "createdAt": "2026-05-29T17:28:35.018Z",
+    "updatedAt": "2026-05-29T17:29:13.289Z"
+  },
+  {
+    "id": "chat_ylaf4ehsl",
+    "title": "4857 sayılı İş Kanununa göre yıllık izin...",
+    "userId": "h1XBqT09YHX1jGfHZgM8Xdo1uKU2",
+    "messages": [
+      {
+        "id": "msg_agkt99296",
+        "role": "user",
+        "content": "4857 sayılı İş Kanununa göre yıllık izin hakları nelerdir?",
+        "timestamp": "2026-05-29T17:35:21.779Z"
+      },
+      {
+        "id": "msg_a79b4na2o",
+        "role": "assistant",
+        "content": "4857 sayılı İş Kanunu'na göre yıllık ücretli izin hakları, çalışanların en temel dinlenme haklarından biridir. Bu hakka ilişkin önemli noktalar şunlardır:\n\n1.  **Hak Kazanma Şartı:**\n    *   Bir işyerinde işe başladığı günden itibaren, deneme süresi de dahil olmak üzere, en az **bir yıl** çalışmış olan işçiler yıllık ücretli izne hak kazanırlar. Bir yılın dolduğu tarihten sonraki ilk yıllık izin hakkı doğar.\n\n2.  **İzin Süreleri:**\n    İşçilere verilecek yıllık ücretli iznin süresi, hizmet süresine göre değişir ve Kanun'da belirtilen sürelerden az olamaz:\n    *   **1 yıldan 5 yıla kadar (5 yıl dahil) hizmeti olanlara:** 14 günden az olamaz.\n    *   **5 yıldan fazla ve 15 yıldan az hizmeti olanlara:** 20 günden az olamaz.\n    *   **15 yıl ve daha fazla hizmeti olanlara:** 26 günden az olamaz.\n\n    **Özel Durumlar:**\n    *   **Yer altı işlerinde çalışanlar için:** Yukarıdaki süreler **4'er gün** artırılarak uygulanır.\n    *   **18 yaşından küçük işçiler ile 50 ve üzeri yaştaki işçiler için:** Hizmet süresine bakılmaksızın yıllık izin süresi **20 günden** az olamaz.\n\n3.  **İznin Kullanılmasına İlişkin Önemli İlkeler:**\n    *   **Bölünmezlik Prensibi (Kısmen Bozulmuştur):** Yıllık ücretli izin işveren tarafından sürekli bir şekilde verilmek zorundadır. Ancak, tarafların anlaşmasıyla, bir bölümü **on günden az olmamak üzere** en fazla üç parçaya bölünebilir. (Örnek: 14 günlük iznin 10 günü tek parça, kalan 4 günü bir başka parça olarak kullanılabilir.)\n    *   **Vazgeçilmezlik:** İşçi yıllık izin hakkından vazgeçemez. İşveren de işçinin iznini kullandırmak zorundadır.\n    *   **Ücretli Olması:** İznin kullanıldığı süre boyunca işçinin ücreti işveren tarafından ödenmeye devam eder. Ayrıca, yemek, yol parası gibi yan haklar da iznin kullanıldığı sürece ödenmelidir.\n    *   **İzin Döneminde Çalışma Yasağı:** İşçi yıllık iznini kullanırken başka bir işte çalışamaz. Çalıştığı tespit edilirse, bu izni karşılığı ödenen ücret geri alınabilir.\n    *   **Hastalık ve Diğer Mazeretler:** Yıllık izin süresine rastlayan ulusal bayram, genel tatil ve hafta tatili günleri izin süresinden sayılmaz. Ayrıca, işçinin izin süresi içinde hastalanması ve rapor alması halinde, hastalık süresi yıllık izin süresinden düşülür.\n\n4.  **İzin Ücretinin Ödenmesi:**\n    *   Yıllık ücretli izin kullandırılmadan çalıştırılan işçinin izni, iş sözleşmesinin feshedilmesi halinde (işçi veya işveren tarafından fesih fark etmeksizin) sözleşmenin sona erdiği tarihteki ücreti üzerinden **izin ücreti** olarak ödenir. Bu, iznin nakde çevrilmesinin tek yasal yoludur.\n\n5.  **İzin Çizelgesi:**\n    *   İşveren, her yıl belirleyeceği yıllık ücretli izin çizelgesini işyerinde ilan etmek zorundadır. İşçiler de yıllık izinlerini ne zaman kullanmak istediklerini işverene bildirmekle yükümlüdürler.\n\n**Önemli Not:** Yıllık izin hakları ve uygulamaları karmaşık olabilmekte ve her somut olay kendi özelinde değerlendirilmelidir. Bu bilgiler genel nitelikte olup, belirli bir durum veya ihtilaf için **mutlaka bir avukat veya iş hukuku uzmanından profesyonel hukuki danışmanlık almanızı** tavsiye ederiz.",
+        "timestamp": "2026-05-29T17:35:29.707Z"
+      }
+    ],
+    "createdAt": "2026-05-29T17:35:21.160Z",
+    "updatedAt": "2026-05-29T17:35:29.708Z"
+  },
+  {
+    "id": "chat_e12u5336o",
+    "title": "2026'daki hafta içine denk gelen resmi t...",
+    "userId": "h1XBqT09YHX1jGfHZgM8Xdo1uKU2",
+    "messages": [
+      {
+        "id": "msg_rtvorcqqz",
+        "role": "user",
+        "content": "2026'daki hafta içine denk gelen resmi tatil ve bayramlar hangileridir ve toplam kaç iş günüdür?",
+        "timestamp": "2026-05-29T17:44:49.132Z"
+      },
+      {
+        "id": "msg_kj97fedwu",
+        "role": "assistant",
+        "content": "# 2026 Yılı Resmi Tatiller (Hafta İçi)\n\n## Resmi Tatiller ve Bayramlar\n\n2026 yılında **hafta içine** denk gelen resmi tatiller şunlardır:\n\n| Tarih | Gün | Tatil Adı |\n|-------|-----|-----------|\n| 1 Ocak | Perşembe | Yılbaşı |\n| 23 Nisan | Perşembe | Ulusal Egemenlik ve Çocuk Bayramı |\n| 1 Mayıs | Cuma | İşçi Bayramı |\n| 19 Mayıs | Çarşamba | Gençlik ve Spor Bayramı |\n| 15 Temmuz | Perşembe | Demokrasi ve Milli Birlik Günü |\n| 30 Ağustos | Pazar | Zafer Bayramı *(hafta sonu)* |\n| 29 Ekim | Perşembe | Cumhuriyet Bayramı |\n\n**Ramazan ve Kurban Bayramları (2026):**\n- **Ramazan Bayramı**: 6-8 Mayıs (Çarşamba-Cuma) → 3 gün tatil\n- **Kurban Bayramı**: 19-23 Temmuz (Pazar-Perşembe) → 4 gün tatil\n\n## Toplam İş Günü Hesabı\n\n- **2026 yılı toplam gün**: 365\n- **Cumartesi ve Pazar günleri**: 104\n- **Resmi tatil günleri (hafta içi)**: ~11 gün\n- **Bayram tatilleri (hafta içi)**: ~7 gün\n\n**Tahmini İş Günü: ~243 iş günü**\n\n⚠️ *Kesin hesaplama için kurumunuzun tatil takvimini kontrol etmenizi ve resmi Cumhuriyet Gazetesi'ndeki güncellemeleri takip etmenizi öneririm.*",
+        "timestamp": "2026-05-29T17:44:55.276Z"
+      }
+    ],
+    "createdAt": "2026-05-29T17:44:05.703Z",
+    "updatedAt": "2026-05-29T17:44:55.277Z"
+  }
+]

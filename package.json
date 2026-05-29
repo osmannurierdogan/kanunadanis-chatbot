@@ -1,0 +1,31 @@
+{
+  "name": "mevzuat-ai",
+  "version": "1.0.0",
+  "description": "ChatGPT clone MVP for Turkish legislation and general questions",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "chatgpt",
+    "clone",
+    "mvp",
+    "express",
+    "sse",
+    "streaming"
+  ],
+  "author": "Antigravity",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "firebase": "^12.14.0",
+    "firebase-admin": "^12.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
+    "stripe": "^14.25.0"
+  }
+}

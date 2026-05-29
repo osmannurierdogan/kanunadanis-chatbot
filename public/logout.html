@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Çıkış Yapılıyor... | Mevzuat AI</title>
+  <!-- Google Fonts (Inter & Outfit) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="style.css?v=1.0.2">
+  
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="auth-page">
+  <!-- Inline blocking script to apply the theme instantly -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('mevzuat_theme') || 'system';
+      const isLight = savedTheme === 'light' || 
+        (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches);
+      if (isLight) {
+        document.body.classList.add('light-theme');
+      }
+    })();
+  </script>
+
+  <div class="auth-page-wrapper">
+    <div class="auth-card" style="align-items: center; justify-content: center; text-align: center; gap: 20px; max-width: 360px; padding: 48px;">
+      <div class="auth-logo animate-pulse" style="animation: pulse 1.5s infinite ease-in-out;">
+        <i data-lucide="log-out"></i>
+      </div>
+      <h2 style="font-family: var(--font-display); font-size: 20px; font-weight: 700;">Çıkış Yapılıyor</h2>
+      <p style="font-size: 13.5px; color: var(--text-secondary);">Güvenli bir şekilde oturumunuz kapatılıyor. Lütfen bekleyin...</p>
+      
+      <!-- Modern Premium CSS Spinner -->
+      <div class="spinner" style="
+        width: 32px;
+        height: 32px;
+        border: 3px solid rgba(16, 163, 127, 0.1);
+        border-radius: 50%;
+        border-top-color: var(--accent-green);
+        animation: spin 1s ease-in-out infinite;
+      "></div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+  </style>
+
+  <!-- Firebase SDKs Compat Mode -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+
+      // Clear local states
+      localStorage.removeItem('mevzuat_logged_in');
+      localStorage.removeItem('mevzuat_mock_token');
+      localStorage.removeItem('mevzuat_mock_email');
+
+      try {
+        // Fetch config to initialize Firebase and sign out
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const config = await res.json();
+          if (config.projectId) {
+            if (!firebase.apps.length) {
+              firebase.initializeApp(config);
+            }
+            await firebase.auth().signOut();
+          }
+        }
+      } catch (err) {
+        console.warn('Firebase sign out warning (might be offline or mock mode):', err);
+      }
+
+      // Short delay for high-fidelity experience, then redirect
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 800);
+    });
+  </script>
+</body>
+</html>

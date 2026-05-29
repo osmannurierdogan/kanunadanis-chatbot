@@ -73,5 +73,6 @@ node_modules/
 *firebase-adminsdk*.json
 serviceAccountKey.json
 
+kanunadanis-firebase-adminsdk-fbsvc-56f770c744.json
 # Local chat data (migrated to Firestore)
 data/

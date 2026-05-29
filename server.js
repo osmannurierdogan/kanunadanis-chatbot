@@ -20,16 +20,62 @@ const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // Initialize Firebase Admin SDK
-// Supports two modes:
-// 1. FIREBASE_SERVICE_ACCOUNT env var (base64-encoded JSON) — for Railway/Render
-// 2. GOOGLE_APPLICATION_CREDENTIALS file path — for local dev with ADC
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  const serviceAccount = JSON.parse(
-    Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf8')
-  );
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+// Priority order:
+// 1. Individual FIREBASE_* env vars (each service account field as separate env var)
+// 2. FIREBASE_SERVICE_ACCOUNT_PATH (file path — local dev)
+// 3. GOOGLE_APPLICATION_CREDENTIALS (ADC fallback)
+function loadServiceAccountFromEnv() {
+  const required = [
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_PRIVATE_KEY',
+    'FIREBASE_CLIENT_EMAIL'
+  ];
+  const missing = required.filter((k) => !process.env[k]);
+  if (missing.length === required.length) return null;
+  if (missing.length > 0) {
+    throw new Error(`Firebase env vars missing: ${missing.join(', ')}`);
+  }
+
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  // Env var systems often escape newlines as literal \n — restore real newlines
+  if (privateKey.includes('\\n')) {
+    privateKey = privateKey.replace(/\\n/g, '\n');
+  }
+  // Strip surrounding quotes if user pasted with them
+  if ((privateKey.startsWith('"') && privateKey.endsWith('"')) ||
+      (privateKey.startsWith("'") && privateKey.endsWith("'"))) {
+    privateKey = privateKey.slice(1, -1);
+  }
+
+  return {
+    type: process.env.FIREBASE_TYPE || 'service_account',
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: privateKey,
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: process.env.FIREBASE_AUTH_URI || 'https://accounts.google.com/o/oauth2/auth',
+    token_uri: process.env.FIREBASE_TOKEN_URI || 'https://oauth2.googleapis.com/token',
+    auth_provider_x509_cert_url:
+      process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL ||
+      'https://www.googleapis.com/oauth2/v1/certs',
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+    universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN || 'googleapis.com'
+  };
+}
+
+const serviceAccountObj = loadServiceAccountFromEnv();
+if (serviceAccountObj) {
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccountObj) });
+  console.log('Firebase: service account from individual env vars');
+} else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+  admin.initializeApp({
+    credential: admin.credential.cert(process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
+  });
+  console.log('Firebase: service account from FIREBASE_SERVICE_ACCOUNT_PATH');
 } else {
   admin.initializeApp({ credential: admin.credential.applicationDefault() });
+  console.log('Firebase: using application default credentials');
 }
 const db = admin.firestore();
 

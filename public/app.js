@@ -1180,10 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="message-body">
           <span class="message-sender">Mevzuat AI</span>
-          <div class="tool-chips"></div>
-          <div class="message-content">
-            <span class="typing-cursor"></span>
-          </div>
+          <div class="message-timeline"></div>
         </div>
       </div>
     `;
@@ -1191,60 +1188,186 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
     scrollToBottom();
 
-    const aiContentDiv = aiWrapper.querySelector('.message-content');
-    const toolChipsDiv = aiWrapper.querySelector('.tool-chips');
+    const timelineDiv = aiWrapper.querySelector('.message-timeline');
 
     const TOOL_LABELS = {
-      search_kanun: 'Kanun aranıyor',
-      search_within_kanun: 'Kanun maddesi aranıyor',
-      search_teblig: 'Tebliğ aranıyor',
-      search_within_teblig: 'Tebliğ içinde aranıyor',
-      get_teblig_content: 'Tebliğ metni getiriliyor',
-      search_cbk: 'Cumhurbaşkanlığı kararnamesi aranıyor',
-      search_within_cbk: 'CBK maddesi aranıyor',
-      search_cbyonetmelik: 'Cumhurbaşkanlığı yönetmeliği aranıyor',
-      search_within_cbyonetmelik: 'CB yönetmeliği maddesi aranıyor',
-      search_cbbaskankarar: 'Cumhurbaşkanı kararı aranıyor',
-      search_within_cbbaskankarar: 'Cumhurbaşkanı kararı içinde aranıyor',
-      get_cbbaskankarar_content: 'Cumhurbaşkanı kararı metni getiriliyor',
-      search_cbgenelge: 'Cumhurbaşkanlığı genelgesi aranıyor',
-      search_within_cbgenelge: 'CB genelgesi içinde aranıyor',
-      get_cbgenelge_content: 'CB genelgesi metni getiriliyor',
-      search_khk: 'KHK aranıyor',
-      search_within_khk: 'KHK maddesi aranıyor',
-      search_tuzuk: 'Tüzük aranıyor',
-      search_within_tuzuk: 'Tüzük maddesi aranıyor',
-      search_kurum_yonetmelik: 'Kurum yönetmeliği aranıyor',
-      search_within_kurum_yonetmelik: 'Kurum yönetmeliği maddesi aranıyor',
-      search_mevzuat: 'Mevzuat aranıyor',
-      get_mevzuat_content: 'Mevzuat metni getiriliyor',
-      search_within_mevzuat: 'Mevzuat içinde aranıyor',
-      get_mevzuat_gerekce: 'Kanun gerekçesi getiriliyor',
-      get_mevzuat_madde_tree: 'Madde dizini getiriliyor'
+      search_kanun: { label: 'Kanun aranıyor', done: 'Kanun arandı' },
+      search_within_kanun: { label: 'Kanun maddesi aranıyor', done: 'Kanun maddesi bulundu' },
+      search_teblig: { label: 'Tebliğ aranıyor', done: 'Tebliğ arandı' },
+      search_within_teblig: { label: 'Tebliğ içinde aranıyor', done: 'Tebliğ içinde arandı' },
+      get_teblig_content: { label: 'Tebliğ metni getiriliyor', done: 'Tebliğ metni getirildi' },
+      search_cbk: { label: 'Cumhurbaşkanlığı kararnamesi aranıyor', done: 'CB kararnamesi arandı' },
+      search_within_cbk: { label: 'CBK maddesi aranıyor', done: 'CBK maddesi bulundu' },
+      search_cbyonetmelik: { label: 'CB yönetmeliği aranıyor', done: 'CB yönetmeliği arandı' },
+      search_within_cbyonetmelik: { label: 'CB yönetmeliği maddesi aranıyor', done: 'CB yön. maddesi bulundu' },
+      search_cbbaskankarar: { label: 'Cumhurbaşkanı kararı aranıyor', done: 'Cumhurbaşkanı kararı arandı' },
+      search_within_cbbaskankarar: { label: 'Cumhurbaşkanı kararı içinde aranıyor', done: 'Cumhurbaşkanı kararı içinde arandı' },
+      get_cbbaskankarar_content: { label: 'Cumhurbaşkanı kararı metni getiriliyor', done: 'Cumhurbaşkanı kararı metni getirildi' },
+      search_cbgenelge: { label: 'CB genelgesi aranıyor', done: 'CB genelgesi arandı' },
+      search_within_cbgenelge: { label: 'CB genelgesi içinde aranıyor', done: 'CB genelgesi içinde arandı' },
+      get_cbgenelge_content: { label: 'CB genelgesi metni getiriliyor', done: 'CB genelgesi metni getirildi' },
+      search_khk: { label: 'KHK aranıyor', done: 'KHK arandı' },
+      search_within_khk: { label: 'KHK maddesi aranıyor', done: 'KHK maddesi bulundu' },
+      search_tuzuk: { label: 'Tüzük aranıyor', done: 'Tüzük arandı' },
+      search_within_tuzuk: { label: 'Tüzük maddesi aranıyor', done: 'Tüzük maddesi bulundu' },
+      search_kurum_yonetmelik: { label: 'Kurum yönetmeliği aranıyor', done: 'Kurum yönetmeliği arandı' },
+      search_within_kurum_yonetmelik: { label: 'Kurum yönetmeliği maddesi aranıyor', done: 'Kurum yön. maddesi bulundu' },
+      search_mevzuat: { label: 'Mevzuat aranıyor', done: 'Mevzuat arandı' },
+      get_mevzuat_content: { label: 'Mevzuat metni getiriliyor', done: 'Mevzuat metni getirildi' },
+      search_within_mevzuat: { label: 'Mevzuat içinde aranıyor', done: 'Mevzuat içinde arandı' },
+      get_mevzuat_gerekce: { label: 'Kanun gerekçesi getiriliyor', done: 'Kanun gerekçesi getirildi' },
+      get_mevzuat_madde_tree: { label: 'Madde dizini getiriliyor', done: 'Madde dizini getirildi' }
     };
 
-    const chipById = {};
-    const labelFor = (name) => TOOL_LABELS[name] || (name.replace(/_/g, ' ') + ' çalıştırılıyor');
+    const labelFor = (name, state) => {
+      const t = TOOL_LABELS[name];
+      if (!t) return name.replace(/_/g, ' ');
+      return state === 'done' ? t.done : t.label;
+    };
 
-    const addToolChip = (id, name, state) => {
-      const label = labelFor(name);
+    // Args'ı kullanıcı dostu formata çevir
+    const formatArgs = (input) => {
+      if (!input || typeof input !== 'object' || Object.keys(input).length === 0) {
+        return null;
+      }
+      const lines = [];
+      for (const [k, v] of Object.entries(input)) {
+        const niceKey = k.replace(/_/g, ' ');
+        let val;
+        if (typeof v === 'string') val = v;
+        else if (typeof v === 'number' || typeof v === 'boolean') val = String(v);
+        else val = JSON.stringify(v);
+        if (val.length > 200) val = val.slice(0, 200) + '…';
+        lines.push({ key: niceKey, value: val });
+      }
+      return lines;
+    };
+
+    const escapeHtml = (s) => String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    // Timeline segments — sıra korunur
+    const timelineSegments = [];
+    const chipById = {};
+    let currentTextSegment = null;
+    let currentTextEl = null;
+
+    const ensureTextSegment = () => {
+      if (currentTextSegment) return currentTextSegment;
+      const seg = { type: 'text', text: '' };
+      timelineSegments.push(seg);
+      currentTextSegment = seg;
+      const el = document.createElement('div');
+      el.className = 'message-content timeline-text';
+      el.innerHTML = '<span class="typing-cursor"></span>';
+      timelineDiv.appendChild(el);
+      currentTextEl = el;
+      return seg;
+    };
+
+    const renderTextSegment = (isStreaming) => {
+      if (!currentTextSegment || !currentTextEl) return;
+      const html = md.render(currentTextSegment.text);
+      currentTextEl.innerHTML = html + (isStreaming ? '<span class="typing-cursor"></span>' : '');
+      Prism.highlightAllUnder(currentTextEl);
+    };
+
+    const appendText = (chunk) => {
+      ensureTextSegment();
+      currentTextSegment.text += chunk;
+      renderTextSegment(true);
+    };
+
+    const finalizeCurrentText = () => {
+      if (currentTextEl) {
+        const html = md.render(currentTextSegment.text);
+        currentTextEl.innerHTML = html;
+        Prism.highlightAllUnder(currentTextEl);
+      }
+      currentTextSegment = null;
+      currentTextEl = null;
+    };
+
+    const createChip = (id, name, state, input, result, errorMsg) => {
+      const label = labelFor(name, state);
+      const args = formatArgs(input);
+      const argsHtml = args
+        ? `<div class="tool-chip-section"><div class="tool-chip-section-title">İstek</div>${
+            args.map(a => `<div class="tool-chip-kv"><span class="tool-chip-k">${escapeHtml(a.key)}:</span> <span class="tool-chip-v">${escapeHtml(a.value)}</span></div>`).join('')
+          }</div>`
+        : '';
+
+      let resultHtml = '';
+      if (state === 'done' && result) {
+        const trimmed = result.length > 1200 ? result.slice(0, 1200) + '\n… (kısaltıldı)' : result;
+        resultHtml = `<div class="tool-chip-section"><div class="tool-chip-section-title">Sonuç</div><pre class="tool-chip-result">${escapeHtml(trimmed)}</pre></div>`;
+      } else if (state === 'error' && errorMsg) {
+        resultHtml = `<div class="tool-chip-section"><div class="tool-chip-section-title">Hata</div><pre class="tool-chip-result tool-chip-error-msg">${escapeHtml(errorMsg)}</pre></div>`;
+      }
+
+      const headerIcon = state === 'running'
+        ? '<span class="tool-chip-spinner"></span>'
+        : state === 'done'
+        ? '<i data-lucide="check" class="tool-chip-icon"></i>'
+        : '<i data-lucide="x" class="tool-chip-icon"></i>';
+
+      const chevron = '<i data-lucide="chevron-down" class="tool-chip-chevron"></i>';
+
+      return `
+        <button type="button" class="tool-chip-header">
+          ${headerIcon}
+          <span class="tool-chip-label">${escapeHtml(label)}${state === 'running' ? '…' : ''}</span>
+          ${chevron}
+        </button>
+        <div class="tool-chip-details">
+          ${argsHtml}
+          ${resultHtml}
+        </div>
+      `;
+    };
+
+    const renderLucideIn = (el) => {
+      if (!window.lucide || !el) return;
+      try {
+        // Scoped render — sadece bu element içindeki [data-lucide]'leri işle
+        if (typeof lucide.createIcons === 'function') {
+          lucide.createIcons({ nameAttr: 'data-lucide', root: el });
+        }
+      } catch (e) {
+        // Fallback to global
+        try { lucide.createIcons(); } catch (_) { /* swallow */ }
+      }
+    };
+
+    const upsertChip = (id, name, state, input, result, errorMsg) => {
+      finalizeCurrentText();
       let chip = chipById[id];
       if (!chip) {
         chip = document.createElement('div');
         chip.className = 'tool-chip ' + state;
-        toolChipsDiv.appendChild(chip);
+        chip.dataset.expanded = 'false';
+        timelineDiv.appendChild(chip);
         chipById[id] = chip;
+        timelineSegments.push({ type: 'tool', id });
       } else {
         chip.className = 'tool-chip ' + state;
       }
-      if (state === 'running') {
-        chip.innerHTML = `<span class="tool-chip-spinner"></span><span class="tool-chip-label">${label}…</span>`;
-      } else if (state === 'done') {
-        chip.innerHTML = `<i data-lucide="check" class="tool-chip-icon"></i><span class="tool-chip-label">${label}</span>`;
-      } else if (state === 'error') {
-        chip.innerHTML = `<i data-lucide="x" class="tool-chip-icon"></i><span class="tool-chip-label">${label} — hata</span>`;
+      chip.innerHTML = createChip(id, name, state, input, result, errorMsg);
+      const header = chip.querySelector('.tool-chip-header');
+      if (header) {
+        header.addEventListener('click', () => {
+          const expanded = chip.dataset.expanded === 'true';
+          chip.dataset.expanded = expanded ? 'false' : 'true';
+        });
       }
-      if (window.lucide) lucide.createIcons();
+      // Auto-expand while running, auto-collapse when done
+      if (state === 'running') chip.dataset.expanded = 'true';
+      else chip.dataset.expanded = state === 'error' ? 'true' : 'false';
+      renderLucideIn(chip);
     };
 
     // 4. Trigger Post SSE Endpoint
@@ -1266,7 +1389,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
-      let accumulatedText = '';
       let buffer = '';
 
       while (true) {
@@ -1274,7 +1396,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        
+
         const parts = buffer.split('\n\n');
         buffer = parts.pop();
 
@@ -1284,33 +1406,47 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dataStr === '[DONE]') {
               break;
             }
+            let data = null;
             try {
-              const data = JSON.parse(dataStr);
+              data = JSON.parse(dataStr);
+            } catch (e) {
+              // Partial buffer or malformed event — skip
+              continue;
+            }
+
+            try {
               if (data.text) {
-                accumulatedText += data.text;
-                aiContentDiv.innerHTML = md.render(accumulatedText) + '<span class="typing-cursor"></span>';
+                appendText(data.text);
                 scrollToBottom();
-                Prism.highlightAllUnder(aiContentDiv);
+              } else if (data.type === 'tool_pending') {
+                upsertChip(data.id, data.name, 'running', null, null, null);
+                scrollToBottom();
               } else if (data.type === 'tool_start') {
-                addToolChip(data.id, data.name, 'running');
+                upsertChip(data.id, data.name, 'running', data.input || null, null, null);
                 scrollToBottom();
               } else if (data.type === 'tool_end') {
-                addToolChip(data.id, data.name, 'done');
+                upsertChip(data.id, data.name, 'done', data.input || null, data.result || null, null);
               } else if (data.type === 'tool_error') {
-                addToolChip(data.id, data.name, 'error');
+                upsertChip(data.id, data.name, 'error', data.input || null, null, data.message);
               } else if (data.error) {
-                console.error('Stream error:', data.error);
+                console.error('Stream server error:', data.error);
+                finalizeCurrentText();
+                const errEl = document.createElement('div');
+                errEl.className = 'message-content timeline-text';
+                errEl.innerHTML = `<p style="color:#b91c1c;"><strong>Sunucu hatası:</strong> ${escapeHtml(data.error)}</p>`;
+                timelineDiv.appendChild(errEl);
               }
-            } catch (e) {
-              // Partial buffer
+            } catch (handlerErr) {
+              console.error('Event handler exception for event:', data, handlerErr);
+              // Bir event handler'ı patlasa bile loop'u kesmiyoruz — bir sonraki event'le devam.
             }
           }
         }
       }
 
       // Finish Streaming successfully
-      aiContentDiv.innerHTML = md.render(accumulatedText);
-      
+      finalizeCurrentText();
+
       const aiBody = aiWrapper.querySelector('.message-body');
       const actionDiv = document.createElement('div');
       actionDiv.className = 'message-actions';
@@ -1326,12 +1462,24 @@ document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
 
     } catch (err) {
+      finalizeCurrentText();
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'message-content timeline-text';
       if (err.name === 'AbortError') {
-        aiContentDiv.innerHTML += `<p style="color: #ff6b6b; font-style: italic; font-size: 13px; margin-top: 8px;">(Sohbet akışı durduruldu.)</p>`;
+        errorDiv.innerHTML = `<p style="color: #ff6b6b; font-style: italic; font-size: 13px; margin-top: 8px;">(Sohbet akışı durduruldu.)</p>`;
       } else {
-        console.error(err);
-        aiContentDiv.innerHTML = `<p style="color: #ff6b6b;">Bir hata oluştu: Yanıt akışı yarıda kesildi.</p>`;
+        console.error('Chat stream error:', err);
+        const msg = escapeHtml(err.message || String(err));
+        const stack = escapeHtml(err.stack || 'no stack');
+        errorDiv.innerHTML = `
+          <p style="color:#b91c1c;"><strong>Frontend hatası:</strong> ${msg}</p>
+          <details style="margin-top:8px;">
+            <summary style="cursor:pointer; font-size:12px; color:#6b7280;">Stack trace</summary>
+            <pre style="font-size:11px; background:rgba(0,0,0,0.05); padding:8px; border-radius:4px; overflow:auto; max-height:240px; margin-top:6px; white-space:pre-wrap;">${stack}</pre>
+          </details>
+        `;
       }
+      timelineDiv.appendChild(errorDiv);
     } finally {
       state.isGenerating = false;
       state.activeController = null;
